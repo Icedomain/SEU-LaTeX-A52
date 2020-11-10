@@ -1,0 +1,19 @@
+% !TeX TS-program = pdflatex
+
+\documentclass{article}
+
+\usepackage[a3paper, landscape]{geometry}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\includepdf[nup=2x1, noautoscale, delta=14 0, pages={last-last, 1}, pagecommand={%
+\begin{picture}(0,0)(-395,512.2)%
+\includegraphics{bookspine_res.pdf}%
+\end{picture}%
+}]{../main.pdf}
+
+\end{document}

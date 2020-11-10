@@ -1,0 +1,103 @@
+% !TEX TS-program = xelatex
+% !TeX encoding = UTF-8
+
+\documentclass[master]{seuthesis} % 硕士
+%\documentclass[master,nocolorlinks]{seuthesis} % 颜色
+% \documentclass[doctor]{seuthesis} % 博士
+% \documentclass[engineering]{seuthesis} % 工程硕士
+
+\usepackage{CJK,CJKnumb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{subfigure}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow,makecell}
+\usepackage{breqn}
+\usepackage{mathrsfs}
+\usepackage{datetime}
+\renewcommand{\today}{2021~年~5~月~25~日}
+
+\newtheorem{theorem}{定理}[chapter]
+\newtheorem{lemma}{引理}[chapter]
+\newtheorem{proof}{证明}[chapter]
+\newtheorem{remark}{注}[chapter]
+\newtheorem{definition}{定义}[chapter]
+
+\graphicspath{{./image/}}
+%\DeclareMathOperator{\sign}{sign} 
+
+\begin{document}
+\categorynumber{000} % 分类采用《中国图书资料分类法》
+\UDC{000}            %《国际十进分类法UDC》的类号
+\secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
+\studentid{18xxxx}   %学号要完整，前面的零不能省略。
+
+\title{基于深度学习的希腊字母研究}{子标题,可以没有}{Thesis Title}{subtitle}
+\author{朴智新}{Zhixin Piao}
+\advisor{杨绿溪}{教授}{Luxi Yang}{Prof.}
+%\coadvisor{李春国}{教授}{LI Chunguo}{Prof.}  % Associate  Prof.  副教授
+
+%\committeechair{徐琴珍 \quad 教授}
+%\reader{黄永明 \quad 教授}{ 李春国 \quad 教授 }
+
+
+\degree{工学硕士}
+\major[12em]{信息与通信工程}  
+\submajor{信号与信息处理}
+\defenddate{\today}
+\authorizedate{}
+\department{信息科学与工程学院}{School of Information Science and Engineering}
+%\duration{2017年1月—2017年6月}
+%\address{中国无线谷5号楼2楼5212室}
+
+%\thanks{本论文获国家XXX计划项目（2012AA00A00）和国家杰出青年科学基金项目（01234567）资助。}
+
+\maketitle
+
+% 中文、英文摘要
+\input{chap/Abstract}
+\tableofcontents
+% 专用术语的注释表
+\input{chap/terminology}
+\listofothers
+
+\begin{Main}
+	\input{chap/intro}
+	\input{chap/back}
+	\input{chap/point1}
+	\input{chap/point2}
+	\input{chap/point3}
+	\input{chap/Improve}
+\end{Main}
+
+\begin{Acknowledgement}{}
+\input{chap/Thanks}
+\end{Acknowledgement}
+
+% 参考文献
+\bibliography{ref/seuthesis}
+
+
+\newpage
+\printindex % 索引
+
+% 附录
+\setcounter{page}{1}
+\begin{Appendix}
+\input{chap/Appendix}
+\end{Appendix}
+
+% 个人简介
+\begin{Resume}
+	\input{chap/Resume}
+\end{Resume}
+\end{document}
+
+
+
+
+
