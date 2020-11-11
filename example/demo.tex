@@ -1,0 +1,1102 @@
+% !Mode:: "TeX:UTF-8"
+%!TEX program  = xelatex
+% !220180776  胡欣毅 2019中国研究生数学建模
+% ! TeXLive + Vscodes
+% !Copyright @Hu Xinyi. All Rights Reserved.
+
+\section{问题一模型建立及求解}
+
+本文问题考虑复杂环境下的飞行器航迹规划，致力于在智能飞行器飞行过程中，搜寻出一系列较为合理的航迹校正点。该类问题往往属于NP-hard问题，求解难度较大。目前此类问题的求解主要依赖于各种启发式算法，如模拟退火算法(SA)、遗传算法(GA)、蚁群算法(ACO)等。
+
+我们将对其建立优化模型，结合一定的启发式策略进行优化求解。
+
+\subsection{问题描述及分析}
+
+本文问题一，我们将建立规划模型，在若干约束的情况下，使得飞行器航迹总长度尽可能小并使飞行器经过校正区域进行校正的次数尽可能少，同时优化算法，降低算法复杂度，使其适用于规模更庞大的航迹搜寻问题。
+
+\subsection{模型建立}
+\subsubsection{目标函数}\label{sec:obj}
+首先考虑目标函数，第一阶段该问题有两个优化目标:
+\begin{enumerate}
+	\item 飞行器各段航迹长度之和小
+	\item 飞行器经过校正区域进行校正的次数少
+\end{enumerate}
+
+在此基础上尽可能的简化算法以降低复杂度并提高算法的有效性。
+
+飞行器出发点为A，终点为B。现假设其在飞行过程中经过$n$个校正点$P_1,P_2,P_3,\cdots,P_n$。此时，优化目标二可表示
+\begin{equation}\label{eq:obj2}
+    min \quad n
+    \end{equation}
+
+将A、B也加入该点列，记A为$P_0$、B为$P_{n+1}$，记该点列之间的点的距离为$D_{ij}$,则相邻点列的线段距离则为$D_{ii+1}$，具体定义为
+\begin{equation}
+    D_{ij}=\left \| P_i - P_j \right \|_2
+\end{equation}
+其中$\left \| \cdot  \right \|_2 $ 为二范数,即几何距离。
+
+故此，优化目标一表示为
+\begin{equation}\label{eq:obj1}
+min \quad \sum_{i=0}^n D_{ii+1}
+\end{equation}
+
+综合考虑上述两个目标，引入系数对$(w_1,w_2)$作为超参数，协调式(\ref{eq:obj1})和式(\ref{eq:obj2})。于是最终的优化目标表示为
+\begin{equation}\label{eq:objsum}
+    \min \quad w_1\sum_{i=0}^n D_{ii+1} + w_2 n
+\end{equation}
+
+\subsubsection{约束条件}\label{sec:opt}
+问题一考虑题目中的(1-7)的约束，现在对其一一进行数学建模，考虑点列$P$中相邻的两点$P_i,P_{i+1}$ 予以描述。假设在$P_i$处的(垂直误差,水平误差)为$(\zeta_i , \eta_i) $。
+
+\noindent \textbf{约束1、4、5：} 飞行器在飞行过程中每飞行1m，垂直水平各增加$\delta $个单位($\delta = 0.001 $)。
+即在$P_{i+1}$处误差校正前的(垂直误差,水平误差)为
+\begin{equation}
+\left\{\begin{matrix}
+    \zeta_{i+1}' = \zeta_{i} + D_{ii+1}\times \delta  \\
+    \eta_{i+1}' = \eta_{i}+ D_{ii+1}\times \delta
+\end{matrix}\right.
+\end{equation}
+
+到达校正点将进行校正操作，其中校正类型$\Gamma$为
+
+\begin{equation}\label{eq:point-correct}
+    \Gamma_i = \begin{cases}
+    1 & \text{ if \quad } P_i \text{是垂直误差校正点 }  \\ 
+    0 & \text{ if \quad } P_i \text{是水平误差校正点 } 
+    \end{cases}
+\end{equation}
+
+所以飞行器到达$P_i$处进行校正后的(垂直误差,水平误差)为
+\begin{equation}\label{eq:correct}
+\left\{\begin{matrix}
+    \zeta_{i} = \zeta_{i}' \times (1- \Gamma_{i} )  \\
+    \eta_{i} = \eta_{i}' \times \Gamma_{i}
+\end{matrix}\right.
+\end{equation}
+
+最终当飞行器到达B($P_{n+1}$)时，其垂直误差和水平误差均应小于$\theta$单位，即:
+\begin{equation}
+\left\{\begin{matrix}
+    \zeta_{n+1}  \leq \theta \\
+    \eta_{n+1} \leq \theta
+\end{matrix}\right.
+\end{equation}
+
+\noindent \textbf{约束2：} 此约束要求飞行器飞行过程中必须进行校正才能一步步从A到达B，不存在不需要校正就能直接实现该跨越的情况。
+
+\noindent \textbf{约束3：} 在出发点A($P_0$)，飞行器的垂直和水平误差均为0,即:
+\begin{equation}
+\left\{\begin{matrix}
+    \zeta_{0}  = 0 \\
+    \eta_{0}  = 0
+\end{matrix}\right.
+\end{equation}
+
+\noindent \textbf{约束6：} 当然校正点的校正能力是有限的，只有满足
+\begin{equation}
+\left\{\begin{matrix}
+    \zeta_{i}'  \leq \alpha_1 \\
+    \eta_{i}' \leq \alpha_2
+\end{matrix}\right.
+\end{equation}
+此时，式(\ref{eq:correct})才会发挥作用，进行垂直误差校正，否则此路径搜索错误，不满足约束。
+
+\noindent \textbf{约束7：} 同\textbf{约束6},当满足
+\begin{equation}
+\left\{\begin{matrix}
+    \zeta_{i}'  \leq \beta_1 \\
+    \eta_{i}' \leq \beta_2
+\end{matrix}\right.
+\end{equation}
+式(\ref{eq:correct})会发挥作用，进行水平误差校正，否则此路径搜索错误，不满足约束。
+
+\subsubsection{优化问题}
+根据章节(\ref{sec:obj})和章节(\ref{sec:opt})所述，总结该问题的数学优化模型为：
+\begin{equation}\label{eq:qu1-latest}
+\begin{aligned}
+     \min & \quad w_1\sum_{i=0}^n D_{ii+1} + w_2 n \\
+    s.t.  & \begin{cases}
+        \zeta_{i+1}' = \zeta_{i} + D_{ii+1}\times \delta  \qquad (i = 0,2,\cdots n-1 )\\
+        \eta_{i+1}' = \eta_{i}+ D_{ii+1}\times \delta \qquad (i = 0,2,\cdots n-1 ) \\
+        \zeta_{i} = \zeta_{i}' \times (1- \Gamma_{i} ) \quad\qquad (i = 1,2,\cdots n ) \\
+        \eta_{i} = \eta_{i}' \times \Gamma_{i} \qquad\quad\qquad (i = 1,2,\cdots n ) \\
+        \zeta_{0}  = 0  \quad \eta_{0}  = 0    \qquad\qquad(\text{初始状态})\\
+        \zeta_{n+1} \leq  \theta \quad \eta_{n+1} \leq \theta \qquad(\text{终点状态})\\
+        \zeta_{i}'  \leq \alpha_1 \quad \eta_{i}' \leq \alpha_2  \quad\qquad (\Gamma_i = 1,i = 1,2,\cdots n) \\
+        \zeta_{i}'  \leq \beta_1 \quad \eta_{i}' \leq \beta_2 \quad\qquad (\Gamma_i = 0,i = 1,2,\cdots n) \\
+    \end{cases}
+\end{aligned}
+\end{equation}
+
+\subsection{启发式算法}
+我们将该问题描述成式(\ref{eq:qu1-latest})所示，但很明显，由于约束过多，直接求解过程中系数矩阵过大将会导致大量的内存占用，从而导致求解困难。此处的优化问题(\ref{eq:qu1-latest})是NP-hard问题，很难直接求解，结合当前的研究情况，我们考虑使用启发式的思想进行搜索剪枝求解。
+
+考虑到经典的排课问题在一定的贪心策略的思想指导下可以得到最优解，其主要思想为按一定优先级进行顺序排课，策略导向为尽可能的往排满课的任务逼近。我们此处的航迹任务也可肢解成一步步的移动，其每一步都尽可能往终点B移动。基于此，本问题我们考虑一种贪婪搜索的方式进行求解。
+
+\subsubsection{贪婪算法\cite{tanlan}}
+所谓贪婪算法是指，在对问题求解时，总是做出在当前看来是最好的选择。也就是说，不从整体最优上加以考虑，所做出的仅是在某种意义上的局部最优解。
+
+因此贪婪算法的优劣很大程度上取决于贪婪策略的合理与否。贪婪策略的选择会导致贪婪算法是不是对该问题能得到整体最优解，另外选择的策略必须无后效性，此状态的选择不影响前面的状态。对于一个实际问题，其基本过程可分解为以下几部分：
+\begin{enumerate}
+    \item 建立数学模型来描述问题
+    \item 把求解的问题分成若干个子问题
+    \item 对每一子问题求解，得到子问题的局部最优解
+    \item 把子问题的解局部最优解合成原来解问题的一个解
+\end{enumerate}
+
+在我们的航迹规划问题中，依次选择一个校正点对飞行器进行校正，其重点在于肢解问题后每一步如何选点，这里可以使用贪婪算法中的搜索思想进行求解。
+
+\subsubsection{基于贪婪搜索的算法策略}\label{sec:tanlan}
+飞行器从出发点A到目标B的过程中，将会经过一系列的校正点。在反复执行一定策略后，我们期望逐渐产生待确定的点列$P (i = 1,2,\cdots,n)$,如图(\ref{fig:res-point})所示：
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{img/res-point}
+    \caption{校正点选择示意图}
+    \label{fig:res-point}
+\end{figure}
+
+\noindent \textbf{贪心策略1：}
+直观的，每段航迹为实现目的进行的有效距离越大，这段航迹所需要的校正点将会越少。此处有效距离为线段航迹在向量$\overrightarrow{AB}$上的投影。
+
+当然每段航迹都需要满足校正条件，否则，选择的航迹将失败。其选择过程中具体子过程如图(\ref{fig:correct-point})所示：
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45\textwidth]{img/correct-point}
+    \caption{校正点选择策略1}
+    \label{fig:correct-point}
+\end{figure}
+
+飞行器在$P_i$处时，会面临$P_{i+1}$的选择，若如图(\ref{fig:correct-point})所示,$P'$在$\overrightarrow{AB} $的投影明显比$P''$在$\overrightarrow{AB} $的投影更长，那么我选$P_{i+1} = P''$相对的会减少校正点的数量。其中$P',P''$为第$i+1$个候选校正点。
+
+但是基于这样贪心策略所得到的解，一方面其对校正点个数是友好的，因为贪心策略让每一步尽可能往B点移动，会使校正点较少；另一方面，对航迹距离和是不友好的，因为飞行器在运动过程中会有较大的无效移动，如图(\ref{fig:res-point})中的$P_1$，它的移动将会偏离$\overrightarrow{AB}$，导致航迹长度过长。
+
+如此，我们将考虑另外的贪婪策略。
+
+\noindent \textbf{贪心策略2：} 如果说\textbf{贪心策略1}主要侧重的是减少校正点的数量，那么此时我们侧重缩短航迹长度。航迹的有效移动(投影)虽然可能较长，但是它会偏离我们的目标向量$\overrightarrow{AB}$，这样我们可以贪心的取航迹与向量$\overrightarrow{AB}$的夹角较小的校正点，如图(\ref{fig:jiaodu-point})所示：
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/jiaodu-point}
+    \caption{校正点选择策略2}
+    \label{fig:jiaodu-point}
+\end{figure}
+
+图(\ref{fig:jiaodu-point})中，虽然$P'$在$\overrightarrow{AB} $的投影比$P''$在$\overrightarrow{AB} $的投影更长，但是$P''$与向量$\overrightarrow{AB} $的夹角明显比$P''$与向量$\overrightarrow{AB} $的夹角更小，那么我选$P_{i+1} = P''$相对的会缩短航迹总长度。
+
+两个\textbf{贪心策略}的协调使用，可以使我们对优化目标(\ref{eq:obj1})和优化目标(\ref{eq:obj2})进行权衡，实现优化目标(\ref{eq:objsum})。超参数$(w_1,w_2)$的选择则对应于两种策略的侧重程度。
+
+\begin{mdframed} [%
+	roundcorner=5pt,
+	linecolor=gray!50,
+	outerlinewidth=0.5pt,
+	middlelinewidth=0.3pt, backgroundcolor=gray!2,
+innertopmargin=\topskip, frametitle={贪婪思想选择策略},
+frametitlefont= \bfseries,frametitlerule=true,frametitlealignment =\raggedright\noindent,
+frametitlerulewidth=.5pt, frametitlebackgroundcolor=gray!2,]
+当前校正点$P_i$，在满足误差校正要求约束下，下一校正点$P_{i+1}$将协调以下两个要素：
+\begin{enumerate}
+	\item 在$\overrightarrow{AB} $的投影最长
+	\item 与$\overrightarrow{AB} $的夹角最小
+\end{enumerate}
+\end{mdframed}
+
+\subsubsection{贪心算法的修正}
+根据章节(\ref{sec:tanlan})中的策略，我们可以求出点列解。但是由于搜索过于贪婪，搜索空间剪枝严重，会漏掉一些优质解。故在此考虑将前文的算法进一步修正。将章节(\ref{sec:tanlan})中的结果作为初始解，进一步迭代以减小校正点个数和缩短航迹长度。
+
+在点列$P$中，有些许航迹可能是不合理的，如$P_{i-1}$和$P_{i+1}$之间不经过所选定的$P_{i}$会有更优路径。如经典的TSP任务，首先会得到杂乱的路径，再在初始路径中利用启发式遗传、退火等算法进一步的简化路径。
+
+所以，我们考虑一种迭代修正贪心结果的算法。根据$P_{i-1}$和$P_{i+1}$去调整$P_{i}$的选择，选择导向为在满足误差约束下$\min(D_{i-1i}+ D_{ii+1})$。具体如图(\ref{fig:xiuzheng})所示。图(\ref{fig:xiuzheng})左上角为贪心策略得到的初始解，右上角为在$A$和$P_{2}$之间寻找$P_{1}'$取代$P_{1}$，左下角为在$P_{1}'$和$P_{3}$之间寻找$P_{2}'$取代$P_{2}$，如此操作，最终得到如右下角所示新的点列$P_1',P_2',P_3',\cdots,P_n'$,此为一次迭代的过程。
+\begin{figure} 
+	\centering
+	\subfigure[初始解]{
+		\includegraphics[width=0.4\textwidth]{img/test4-1}
+	} \quad
+	\subfigure[修正过程1]{
+		\includegraphics[width=0.4\textwidth]{img/test4-2}
+    }\\
+    \subfigure[修正过程2]{
+		\includegraphics[width=0.4\textwidth]{img/test4-3}
+	} \quad
+	\subfigure[修正解]{
+		\includegraphics[width=0.4\textwidth]{img/test4-4}
+    }
+	\caption{贪心算法的修正示意}
+	\label{fig:xiuzheng}
+\end{figure}
+
+我们将综合贪心策略搜索算法和对贪心算法的迭代修正进行求解，算法流程总结如图(\ref{fig:suanfa}),图(\ref{fig:suanfa})左边为贪心策略搜索，右边是对其进行迭代寻优。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/suanfa}
+    \caption{航迹规划算法流程}
+    \label{fig:suanfa}
+\end{figure}
+
+值得注意的是，{\crb{贪心搜索中存在两个策略，策略的偏向会影响规划结果的好坏，也会影响迭代过程解的收敛性。}}
+
+\subsection{问题一求解结果}
+利用所提出的算法求解优化问题(\ref{eq:qu1-latest}),分别对两个附件进行求解。
+
+首先求解数据附件一，需要\crb{8个校正点}进行校正(不加上起始点A、B)，此时的\crb{航迹长度为106350.06m}。其各个校正点的情况如表(\ref{tab:res-qu1-1})所示。\crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件一航迹规划结果表} 
+	\label{tab:res-qu1-1}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0     & 0     & 出发点A \\
+        521   & 9.626510211 & 9.626510211 & \multicolumn{1}{c}{0} \\
+        64    & 21.75543959 & 12.12892937 & \multicolumn{1}{c}{1} \\
+        80    & 11.42105429 & 23.54998366 & \multicolumn{1}{c}{0} \\
+        170   & 23.3981087 & 11.97705441 & \multicolumn{1}{c}{1} \\
+        278   & 10.45703322 & 22.43408763 & \multicolumn{1}{c}{0} \\
+        369   & 21.89316682 & 11.43613361 & \multicolumn{1}{c}{1} \\
+        214   & 13.31357171 & 24.74970531 & \multicolumn{1}{c}{0} \\
+        397   & 22.33065458 & 9.017082879 & \multicolumn{1}{c}{1} \\
+        612   & 16.97269129 & 25.98977417 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+这些校正点之间的转移距离如表(\ref{tab:qu1-1-dis}),单位为m。8个校正点,加上A、B共有9段转移过程。
+\begin{table}[!htbp]
+	\caption{附件一校正点间的转移距离} 
+	\label{tab:qu1-1-dis}
+	\centering
+	\begin{tabular}{ccccc} 
+		\hline
+        A-P1  & P1-P2 & P2-P3 & P3-P4 & P4-P5 \\
+    9626.510 & 12128.929 & 11421.054 & 11977.054 & 10457.033 \\\hline \hline 
+    P5-P6 & P6-P7 & P7-P8 & P8-B  &  \\
+    11436.134 & 13313.572 & 9017.083 & 16972.691 &  \\ \hline 
+\end{tabular}\end{table}
+
+将其航迹绘制于三维图中，如图(\ref{fig:res-qu1-1}).\figcolor 绿色折线为规划的航迹路径。
+
+由航迹图初步感觉波动明显，在立体图中难以观察处特性，将可视化其各个视角视图(X0Y截面、X0Z截面、YOZ截面),并绘制飞行器在每个轴向上的位置，如图(\ref{fig:res-qu1-1-add}),\shuoming
+\begin{figure}[!htbp]
+	\centering
+	\subfigure[X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_xoy}
+	} \quad
+	\subfigure[z轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_z}
+    } \\
+    \subfigure[X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_xoz}
+	} \quad
+	\subfigure[y轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_y}
+    } \\
+    \subfigure[YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_yoz}
+	} \quad
+	\subfigure[x轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data1_x}
+    } 
+	\caption{附件一校正点移动航迹各个截面投影及单个轴向移动情况}
+	\label{fig:res-qu1-1-add}
+\end{figure}
+
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{res/que1_data1_route}
+    \caption{附件一校正点移动航迹}
+    \label{fig:res-qu1-1}
+\end{figure}
+
+\newpage
+再求解数据附件二，需要\crb{12个校正点}进行校正，此时的\crb{航迹长度为111585.519m}。其各个校正点的情况如表(\ref{tab:res-qu1-2})所示。\crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件二航迹规划结果表} 
+	\label{tab:res-qu1-2}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0     & 0     & 出发点A \\
+        163   & 13.28789761 & 13.28789761 & \multicolumn{1}{c}{0} \\
+        114   & 18.62205093 & 5.334153324 & \multicolumn{1}{c}{1} \\
+        8     & 13.92198578 & 19.2561391 & \multicolumn{1}{c}{0} \\
+        309   & 19.44631118 & 5.524325401 & \multicolumn{1}{c}{1} \\
+        121   & 11.25204264 & 16.77636805 & \multicolumn{1}{c}{0} \\
+        123   & 16.60364289 & 5.351600244 & \multicolumn{1}{c}{1} \\
+        49    & 11.79019446 & 17.1417947 & \multicolumn{1}{c}{0} \\
+        160   & 18.30400023 & 6.513805771 & \multicolumn{1}{c}{1} \\
+        92    & 5.776163625 & 12.2899694 & \multicolumn{1}{c}{0} \\
+        93    & 15.26088202 & 9.484718396 & \multicolumn{1}{c}{1} \\
+        61    & 9.834209702 & 19.3189281 & \multicolumn{1}{c}{0} \\
+        292   & 16.38812359 & 6.553913884 & \multicolumn{1}{c}{1} \\
+        326   & 6.960508934 & 13.51442282 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+在这些校正点间的转移距离如表(\ref{tab:qu1-2-dis}),单位为m。12个校正点,加上A、B共有13段转移过程。
+\begin{table}[!htbp]
+	\caption{附件二校正点间的转移距离} 
+	\label{tab:qu1-2-dis}
+	\centering
+	\begin{tabular}{ccccccc} 
+		\hline
+        A-P1  & P1-P2 & P2-P3 & P3-P4 & P4-P5 & P5-P6 & P6-P7 \\ 
+        13287.90 & 5334.15 & 13921.99 & 5524.33 & 11252.04 & 5351.60 & 11790.19 \\
+		\hline \hline
+        P7-P8 & P8-P9 & P9-P10 & P10-P11 & P11-P12 & P12-B &  \\ 
+        6513.81 & 5776.16 & 9484.72 & 9834.21 & 6553.91 & 6960.51 &  \\
+		\hline
+\end{tabular}\end{table}
+
+将其航迹绘制于三维图中，如图(\ref{fig:res-qu1-2}).\figcolor 绿色折线为规划的航迹路径。
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{res/que1_data2_route}
+    \caption{附件二校正点移动航迹}
+    \label{fig:res-qu1-2}
+\end{figure}
+
+同样，将可视化其各个视角视图(X0Y截面、X0Z截面、YOZ截面),并绘制飞行器在每个轴向上的位置，如图(\ref{fig:res-qu1-2-add}),\shuoming 右边3张图在点序号等于1开始绘制。
+\newpage
+\begin{figure}[!htbp]
+	\centering
+	\subfigure[X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_xoy}
+	} \quad
+	\subfigure[z轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_z}
+    } \\
+    \subfigure[X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_xoz}
+	} \quad
+	\subfigure[y轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_y}
+    } \\
+    \subfigure[YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_yoz}
+	} \quad
+	\subfigure[x轴变化]{
+		\includegraphics[width=0.45\textwidth]{res/que1_data2_x}
+    } 
+	\caption{附件二校正点移动航迹各个截面投影及单个轴向移动情况}
+	\label{fig:res-qu1-2-add}
+\end{figure}
+
+\subsection{结果与算法分析}
+\subsubsection{结果对比分析}
+前文已对两个数据进行求解，其结果对比于表(\ref{tab:qu1-res-all})：
+\begin{table}[!htbp]
+	\caption{问题一求解结果} 
+	\label{tab:qu1-res-all}
+	\centering
+	\begin{tabular}{lcc} 
+		\toprule[1.5pt] 
+        & 附件一求解结果       & 附件二求解结果       \\
+        \midrule[1pt] 
+        AB单位向量     & (0.9954 , 0.0961 , 0.0002) & (0.9704 , 0.2413 , 0.0048) \\
+        AB直线距离(万米) & 10.046                     & 10.305                     \\
+        总校正点个数     & 611                        & 325                        \\
+        需要校正点个数    & 8                          & 12                         \\
+        航迹长度(m)    & 106350.06                  & 111585.519                 \\
+        贪心策略偏向     & 夹角偏向                       & 有效距离(投影)偏向                 \\
+        达到稳定迭代次数T  & \textless{}10              & \textless{}10              \\
+        求解时间(s)    & 0.181                      & 0.971    \\     
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+根据上表AB单位向量，可以明显看出出发点A到达终点B，主要是x轴方向的移动，y、z轴变化很小。
+得到的航迹长度与AB之间的距离都较为接近，且需要的校正点个数较少，得到了较优解。
+
+根据航迹轨迹图(\ref{fig:res-qu1-1})和图(\ref{fig:res-qu1-2})，很难显示表现出航迹规划优劣，故我们考虑在图(\ref{fig:res-qu1-1-add})和图(\ref{fig:res-qu1-2-add})观察运动优劣性。
+
+截面和单轴图(\ref{fig:res-qu1-1-add})和图(\ref{fig:res-qu1-2-add})中，一方面，X0Y截面和X0Z截面都表现出x轴变化明显，其他轴变化较小的趋势，同时YOZ截面投影被限在小范围内；另一方面单轴变化中y轴和z轴变化相对较小，x轴逐渐攀升，呈线性趋势。因此，我们算法设计的航迹较为合理，有效。
+
+但两组数据不同的是，他们对贪心策略的偏向不同，数据一它更加侧重于夹角偏向，即\textbf{贪婪策略2}，数据二更侧重于点列在$\overrightarrow{AB}$上的投影大小，即\textbf{贪婪策略1}。观察AB方向上的单位向量，附件一的该向量更平行于x轴，附件二的该向量在y轴有一个不小的分量。
+
+\subsubsection{问题一算法有效性\&复杂度分析}
+本文所有的算法运行都在Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz, 8G RAM电脑，MATLAB2015b平台下进行，后文不再予以说明。
+
+我们对算法运行结果验证，所的成绩的飞行器轨迹在校正点处，能满足垂直和水平校验误差限制要求，飞行器能成功按轨迹到达终点，且航迹长度较短，校正点数较少，是合理有效的。
+
+再者在两个数据集场景下运行时间都在1s以内，算法复杂度相对较低。具体为:
+\begin{enumerate}
+    \item 时间复杂度： 贪心策略依次选择校正点，需要遍历全部校正点，来完成轨迹的规划。若数据长度为N, 则时间复杂度为$\mathcal{O}(N)$；而将贪心得到的初始解进行迭代寻找更优解，时间复杂度为$\mathcal{O}(N^2)$。因为迭代更新两点间校正点时需要遍历，同时，中间点变化后，需要更新之后所有的校正点，又有几次遍历，因此其时间复杂度为$\mathcal{O}(N^2)$。
+	\item 空间复杂度：每次更新迭代临时变量，不会产生新的空间占用，利用率高；同时注意避免数组大开小用，减少不必要的损耗。
+\end{enumerate}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{问题二模型建立及求解}
+问题一中我们根据(1-7)的约束，对优化问题(\ref{eq:qu1-latest})实行了一系列的求解策略设计并在两个场景下进行了计算分析，初步实现了A、B点之间的航迹规划现在在问题一的基础上需要叠加一个约束(8)，重新设计规划方案。
+
+\subsection{问题描述及分析}
+问题一没有即时转弯和转弯半径、曲率的限制，故我们航迹求解只需沿选出的校正点运动即可，这样的求解结果注定我们的结果为一系列的线段。问题二只需要在问题一的基础上加入了飞行器不能强行转弯的限制，我们考虑在问题一的基础上，采取一定柔滑的方式连接校正点。
+
+\subsection{模型建立}
+同样考虑待选取点列$P$的相邻两个点$P_i,P_{i+1}$之间的情况。之前其连接方式为线段连接。
+
+\noindent \textbf{约束8：} 此处我们需要引入光滑的曲线$\Omega_i$，它将满足如下几个条件：
+\begin{enumerate}
+	\item 曲线连续、可导(光滑)
+	\item 曲线$\Omega_i$与$\Omega_{i-1}$、$\Omega_{i+1}$在连接点处连续可导(节点处光滑)
+	\item 曲线曲率半径处处不小于200m
+\end{enumerate}
+
+一方面曲线的节点连续，因此满足
+\begin{equation}
+\begin{aligned}
+    \Omega_{i-1}(P_i) = \Omega_{i}(P_i)  &\qquad  (i =0,1,\cdots,n ) \\
+    \Omega_{i-1}'(P_i) = \Omega_{i}'(P_i) &\qquad  (i =0,1,\cdots,n )  \\
+\end{aligned}
+\end{equation}
+
+另一方面，曲线曲率半径不小于200m ，即
+\begin{equation}
+    \mathcal{R}(\Omega_{i}) \geq 200 \qquad (i =0,1,\cdots,n )
+\end{equation}
+
+将上述轨迹曲线的约束加入式(\ref{eq:qu1-latest}),即为本问题的优化问题。
+
+同样，问题一中的优化问题难以求解，此处轨迹更难以用最优化理论求解，仍然需要考虑一定的策略。基于此，我们的校正点选择策略将会引入一些新的条件(因为航迹曲线肯定会比直线段连接更长)，但与问题一大致相同，并在选出的校正点直接采取缓和的方式定航迹。
+
+\subsection{Dubins曲线}
+现阶段直接的方法如插值拟合等能初步满足我们的需求，但策略选择上优越性较低。另外还有三次B-Spline曲面法\cite{Dubins}等也是航迹平滑的方法。
+
+考虑到Dubins曲线是在满足曲率约束和规定的始端和末端的切线方向的条件下，连接两个二维平面（即X-Y平面）的最短路径\cite{Dubins曲线简介}。我们将采用此曲线进行航迹平滑处理，以满足转弯半径的要求。
+
+Dubins曲线的求解方式有很多，我们这里不考虑如微分几何这样的复杂求解方法，仅仅根据向量法进行解析\footnote{此解法详细推导在文献\cite{Dubins}中有说明，我们只给简易过程说明。}。
+
+三维中的Dubins曲线示意图如图(\ref{fig:Dubins-line})所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/Dubins-line}
+    \caption{三维Dubins模型截面}
+    \label{fig:Dubins-line}
+\end{figure}
+
+当飞行器在$P_i,P_{i+1}$间移动的过程中，依次通过如图$\widetilde{P_iQ_1},Q_1Q_2,\widetilde{Q_2P_{i+1}}$三段子路径，实现平滑的过程。($\Omega_{i} = \widetilde{P_iQ_1}+Q_1Q_2+\widetilde{Q_2P_{i+1}}$)
+
+首先针对这段$ \Omega_{i}$的端点$P_i,P_{i+1}$,分别有$V_i $和$V_{i+1} $的速度向量(本节描述中，所有大写表示现实物理向量，小写表示其对应的单位向量，如: $v_i = V_i /\left \| V_i \right \|_2 $,篇幅原因不一一叙述 )，\crb{它们往往不在一个平面}，用切向量$S$与截面两个圆相切($S=(S_x,S_y,S_z)$)。
+
+这样，起始圆$O_i$平面的法向量(纸面往外)为：
+\begin{equation}
+    U_s = S \times V_i
+\end{equation}
+
+点$P_i$指向起始圆心的向量$P_iO_i$和切点$Q_1$指向起始圆心的向量$Q_1O_i$分别为
+\begin{equation}
+\begin{aligned}
+W_s & = V_i \times U_s \\
+Y_s & = S \times U_s \\
+\end{aligned}
+\end{equation}
+
+同时，将得到圆心点$O_i$和切点$Q_1$的坐标表达式:
+\begin{equation}
+\begin{aligned}
+O_i & = P_i + R  w_s \\
+Q_1 & = O_1 - R  y_s \\
+\end{aligned}
+\end{equation}
+
+这里$R$是圆的半径，为尽可能的减短路径长度，我们可以尽可能的取大圆弧的航迹，极限情况此处的半径$R = \mathcal{R}(\Omega_{i}) = 200m$。
+
+同理，可得到另一侧的相似信息。这样，圆$O_{i+1}$平面的法向量(纸面往外)为：
+\begin{equation}
+    U_g = S \times V_{i+1}
+\end{equation}
+
+点$P_{i+1}$指向起始圆心的向量$P_{i+1}O_{i+1}$和切点$Q_2$指向起始圆心的向量$Q_2O_{i+1}$、圆心点$O_{i+1}$坐标和切点$Q_2$坐标分别为：
+\begin{equation}
+\begin{aligned}
+W_g & = - V_{i+1} \times U_g \\
+Y_g & = - S \times U_g \\
+O_{i+1} & = P_{i+1} + R  w_g \\
+Q_2 & = O_{i+1} - R  y_g \\
+\end{aligned}
+\end{equation}
+
+根据两个切点$Q_1,Q_2$和向量$S$可以列出方程求解：
+\begin{equation}
+   S = Q_2 - Q_1 
+\end{equation}
+
+更进一步化简得到:
+\begin{equation}
+\begin{aligned}
+S & = Q_2 - Q_1 \\
+  & = \left(P_{i+1}+{R} \times w_{g}-{R} \times y_{g}\right)-\left(P_{i}+{R} \times w_{s}-{R} \times y_{s}\right) \\
+  & = \left(P_{i+1}-P_{i}\right)-R\left(s+v_{i}\right) \tan \frac{\varphi_{i}}{2}-R\left(s+v_{i+1}\right) \tan \frac{\varphi_{i+1}}{2}
+\end{aligned}
+\end{equation}
+
+其中$\varphi_{i},\varphi_{i+1} $为飞行器轨迹在两个圆上的弧度。
+
+\subsubsection{Dubins曲线方程}
+根据上述的分析推导，得到如下方程：
+\begin{equation}\label{eq:dub-eq}
+\left\{
+\begin{split}
+&   \cos \varphi_{i}=v_{i} \cdot s \qquad \cos \varphi_{i+1}=v_{i+1} \cdot s \\
+& P_{i+1 x}-P_{i x} =S_{x}+R s_{x}\left(\tan \frac{\varphi_{i}}{2}+\tan \frac{\varphi_{i+1}}{2}\right)+R\left(v_{i+1 x} \tan \frac{\varphi_{i+1}}{2}+v_{i x} \tan \frac{\varphi_{i}}{2}\right) \\ 
+& P_{i+1 y}-P_{i y} =S_{y}+R s_{y}\left(\tan \frac{\varphi_{i}}{2}+\tan \frac{\varphi_{i+1}}{2}\right)+R\left(v_{i+1 y} \tan \frac{\varphi_{i+1}}{2}+v_{i y} \tan \frac{\varphi_{i}}{2}\right) \\ 
+& P_{i+1 z}-P_{i z} =S_{z}+R s_{z}\left(\tan \frac{\varphi_{i}}{2}+\tan \frac{\varphi_{i+1}}{2}\right)+R\left(v_{i+1 z} \tan \frac{\varphi_{i+1}}{2}+v_{i z} \tan \frac{\varphi_{i}}{2}\right)
+\end{split}
+\right.
+\end{equation}
+
+其中，$\varphi_{i},\varphi_{i+1}$为飞行器轨迹在两个圆上的弧度，$s$为截面两个圆相切的\textbf{单位向量},$s=(s_x,s_y,s_z)$。
+$v_i,v_{i+1}$为点$P_i,P_{i+1}$处的\textbf{单位运动速度向量}($\Omega_{i}'(P_i)$,$\Omega_{i}'(P_{i+1})$的单位化),$v_i=(v_ix,v_iy,v_iz),v_{i+1}=(v_{i+1x},v_{i+1y},v_{i+1z})$。
+$(P_{i x},P_{i y},P_{i z}),(P_{i+1 x},P_{i+1 y},P_{i+1 z})$为$P_i,P_{i+1}$处的坐标。
+
+在此基础上求解式(\ref{eq:dub-eq})直接可得到两个圆上的弧度$\varphi_{i},\varphi_{i+1} $和切向量$S$。此时，Dubins曲线$\Omega_{i}$线长$\ell_i$为
+\begin{equation}
+\ell_i  = \left \| S \right \|_2 + R \times (\varphi_{i}+\varphi_{i+1}) 
+\end{equation}
+
+明显，此处的线长$\ell_i \geq D_{ii+1}$，$D_{ii+1}$为$P_i,P_{i+1}$连线线段距离。
+
+\subsection{基于Dubins曲线方程的算法设计}
+此问题中我们将取半径$R = \mathcal{R}(\Omega_{i}) = 200m$进行分析计算。
+初步分析数据集中AB的长度将大于10万米，转弯半径$R$数量级比AB长度小两个数量级，所以转弯部分占比会很小，对问题一的贪心搜索策略影响将很微弱。
+
+简易分析之后根据\textbf{约束8}对航迹折线段进行平滑化。但是直接在问题一的结果上进行Dubins曲线平滑容易使解点列不满足误差约束。我们考虑新的搜索方式，该搜索策略在问题一中加入折线段的平滑过程。
+
+在此问中搜索解点列$P$时，我们先同问题一的策略选择满足误差约束的点，再通过Dubins曲线平滑将线段$P_iP_{i+1}$变成两段圆弧加一段线段的航迹$\Omega_i$。当然这个过程中可能线段$P_iP_{i+1}$的距离$D_{ii+1}$满足约束，但是$ \ell_i $不满足约束，此时需要在问题一贪心策略选择$P_{i+1}$时选择优先级较低的(在$\overrightarrow{AB} $的投影最长$\longrightarrow$次长 、与$\overrightarrow{AB} $的夹角最小$\longrightarrow$次小)，结合数量级分析，这样的解是合理的。
+
+现将重点实现(\ref{eq:dub-eq})的求解以平滑。方程组需要输入$P_i,P_{i+1}$处的坐标$(P_{i x},P_{i y},P_{i z})$,\\$(P_{i+1 x},P_{i+1 y},P_{i+1 z})$以及
+点$P_i,P_{i+1}$处的\textbf{单位运动速度向量}$v_i,v_{i+1}$。$P_i,P_{i+1}$处的坐标可以根据所述策略先行寻出，然而，该点处的速度方向是无法事先知道的。这里，我们将引入一个新的贪心策略进行描述。
+
+\noindent \textbf{贪心策略3：} 航迹的目的为到达目的B点，那么在待选点的朝向朝向B将使得航迹的无效移动相对减短，同时Dubins曲线为实现平滑的部分也最短。如图(\ref{fig:qiexian})所示，$P_i,P_{i+1}$处都指向目的B点。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/qiexian}
+    \caption{点$P_i,P_{i+1}$处的\textbf{单位运动速度向量}}
+    \label{fig:qiexian}
+\end{figure}
+
+当然在出发点A点时不能过于贪婪的让其速度方向朝向B，否则圆弧的存在必定使其偏离$\overrightarrow{AB}$，故在起点A我们直接让其指向$P_1$,即首段线段不需要平滑化处理。
+
+\begin{mdframed} [%
+	roundcorner=5pt,
+	linecolor=gray!50,
+	outerlinewidth=0.5pt,
+	middlelinewidth=0.3pt, backgroundcolor=gray!2,
+innertopmargin=\topskip, frametitle={问题二贪婪思想确定校正点单位运动速度向量},
+frametitlefont= \bfseries,frametitlerule=true,frametitlealignment =\raggedright\noindent,
+frametitlerulewidth=.5pt, frametitlebackgroundcolor=gray!2,]
+起点A运动速度向量直接指向$P_1$。$P_i,P_{i+1}$处运动速度向量都指向目的B点。
+\end{mdframed}
+
+结合算法(\ref{fig:suanfa}),叠加新的策略进行算法设计，算法流程总结如图(\ref{fig:suanfa2}),图(\ref{fig:suanfa2})，左边为更改贪心策略后搜索，右边是对其进行迭代寻优。图中红色部分为与算法(\ref{fig:suanfa})不同部分，即如何将Dubins曲线部分引入到航迹中。
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/suanfa2}
+    \caption{平滑航迹规划算法流程}
+    \label{fig:suanfa2}
+\end{figure}
+
+\subsection{问题二求解结果}
+同问题一，利用算法(\ref{fig:suanfa2})求解添加约束后的优化问题(\ref{eq:qu1-latest}),对两个附件进行求解。
+
+此时，求解方程将使用MATLAB软件的非线性方程组求解库，需要输入方程组的初始值，为简化方程组求解复杂度并提高精度，可以结合问题将初始解往最终解上靠。方程组求解两个圆上的弧度$\varphi_{i},\varphi_{i+1} $和切向量$S$，而我们又分析有{\crb{圆弧在航迹中占比很小}}。故
+{\textbf{切向量$S\approx \overrightarrow{P_iP_{i+1}}$,可将$ \overrightarrow{P_iP_{i+1}}$作为初始解简化计算。}}
+
+先求解数据附件一，需要\crb{8个校正点}进行校正(不加上起始点A、B)，此时的\crb{航迹长度为106398.093m}。
+\textbf{求解的校正点和问题一的一样，只是航迹长度有细微变化，相差48.0322m}。
+其各个校正点的情况如表(\ref{tab:res-qu2-1})所示。\crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件一航迹规划结果表} 
+	\label{tab:res-qu2-1}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0 & 0 & 出发点A \\
+        \multicolumn{1}{c}{521} & 9.626510211 & 9.626510211 & \multicolumn{1}{c}{0} \\
+        \multicolumn{1}{c}{64} & 21.76500153 & 12.13849132 & \multicolumn{1}{c}{1} \\
+        \multicolumn{1}{c}{80} & 11.45682061 & 23.59531193 & \multicolumn{1}{c}{0} \\
+        \multicolumn{1}{c}{170} & 23.43416317 & 11.97734255 & \multicolumn{1}{c}{1} \\
+        \multicolumn{1}{c}{278} & 10.45729398 & 22.43463653 & \multicolumn{1}{c}{0} \\
+        \multicolumn{1}{c}{369} & 21.89506075 & 11.43776677 & \multicolumn{1}{c}{1} \\
+        \multicolumn{1}{c}{214} & 13.31368489 & 24.75145167 & \multicolumn{1}{c}{0} \\
+        \multicolumn{1}{c}{397} & 22.33117644 & 9.017491551 & \multicolumn{1}{c}{1} \\
+        612   & 16.97269129 & 25.99018284 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+这些校正点之间的转移距离如表(\ref{tab:qu2-1-dis}),单位为m。该结果与问题一相比变化不大，故下文对附件二数据情况不再罗列该表。
+\begin{table}[!htbp]
+	\caption{附件一校正点间的转移距离} 
+	\label{tab:qu2-1-dis}
+	\centering
+	\begin{tabular}{ccccc} 
+		\hline
+        A-P1  & P1-P2 & P2-P3 & P3-P4 & P4-P5 \\
+        9626.510211 & 12138.49132 & 11456.82061 & 11977.3426 & 10457.29 \\ \hline \hline 
+    P5-P6 & P6-P7 & P7-P8 & P8-B  &  \\
+    11437.77 & 13313.68 & 9017.492 & 16972.69 &  \\ \hline 
+\end{tabular}\end{table}
+
+将其航迹绘制于三维图中，如图(\ref{fig:res-qu2-1})。为更显化平滑后的航迹，淡化校正点的颜色。
+
+同样由航迹图在立体图中难以观察处特性，将可视化其各个视角视图(X0Y截面、X0Z截面、YOZ截面),但是校正点附件的圆弧仍然无法看清，将取航迹局部绘制各个视角局部视图(P2-P5局部X0Y截面、P2-P5局部X0Z截面、P2-P5局部YOZ截面)，如图(\ref{fig:res-qu2-1-add}),\shuomingxx
+\begin{figure}[!htbp]
+	\centering
+	\subfigure[X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_xoy}
+	} \quad
+	\subfigure[P2-P5局部X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_route_P2_to_P5_xoy}
+    } \\
+    \subfigure[X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_xoz}
+	} \quad
+	\subfigure[P2-P5局部X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_route_P2_to_P5_xoz}
+    } \\
+    \subfigure[YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_yoz}
+	} \quad
+	\subfigure[P2-P5局部Y0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data1_route_P2_to_P5_yoz}
+    } 
+	\caption{附件一校正点移动航迹各个截面投影}
+	\label{fig:res-qu2-1-add}
+\end{figure}
+
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{res/que2_data1_route}
+    \caption{附件一校正点移动航迹}
+    \label{fig:res-qu2-1}
+\end{figure}
+
+\newpage
+再求解数据附件二，仍然需要\crb{12个校正点}进行校正，此时的\crb{航迹长度为111688.30m}。其各个校正点的情况如表(\ref{tab:res-qu1-2})所示。
+\textbf{求解的校正点和问题一的一样，航迹长度相差102.789m}。
+各个校正点的情况如表(\ref{tab:res-qu2-2})所示。\crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件二航迹规划结果表} 
+	\label{tab:res-qu2-2}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0     & 0     & 出发点A \\
+    163   & 13.28789761 & 13.28789761 & \multicolumn{1}{c}{0} \\
+    114   & 18.63609614 & 5.34819853 & \multicolumn{1}{c}{1} \\
+    8     & 13.93064325 & 19.27884177 & \multicolumn{1}{c}{0} \\
+    309   & 19.46593412 & 5.535290871 & \multicolumn{1}{c}{1} \\
+    121   & 11.259882 & 16.79517287 & \multicolumn{1}{c}{0} \\
+    123   & 16.63849929 & 5.378617296 & \multicolumn{1}{c}{1} \\
+    49    & 11.79055375 & 17.16917105 & \multicolumn{1}{c}{0} \\
+    160   & 18.31460772 & 6.524053971 & \multicolumn{1}{c}{1} \\
+    92    & 5.776379324 & 12.3004333 & \multicolumn{1}{c}{0} \\
+    93    & 15.26117141 & 9.484792082 & \multicolumn{1}{c}{1} \\
+    61    & 9.834687342 & 19.31947942 & \multicolumn{1}{c}{0} \\
+    292   & 16.41149133 & 6.57680399 & \multicolumn{1}{c}{1} \\
+    326   & 6.960508934 & 13.53731292 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+
+将三维航迹图如图(\ref{fig:res-qu2-2})所示。
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{res/que2_data2_route}
+    \caption{附件二校正点移动航迹}
+    \label{fig:res-qu2-2}
+\end{figure}
+
+将可视化其各个视角视图(X0Y截面、X0Z截面、YOZ截面)和各个视角视图(P4-P8局部X0Y截面、P4-P8局部X0Z截面、P4-P8局部YOZ截面)，如图(\ref{fig:res-qu2-2-add}),\shuomingxx
+\begin{figure}[!htbp]
+	\centering
+	\subfigure[X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_xoy}
+	} \quad
+	\subfigure[P4-P8局部X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_xoy_P4_to_P8}
+    } \\
+    \subfigure[X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_xoz}
+	} \quad
+	\subfigure[P4-P8局部X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_xoz_P4_to_P8}
+    } \\
+    \subfigure[YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_yoz}
+	} \quad
+	\subfigure[P4-P8局部Y0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que2_data2_yoz_P4_to_P8}
+    } 
+	\caption{附件二校正点移动航迹各个截面投影}
+	\label{fig:res-qu2-2-add}
+\end{figure}
+
+\subsection{结果与算法分析}
+\subsubsection{结果对比分析}
+对两个数据集进行求解并与问题一对比，其结果对比于表(\ref{tab:qu2-res-all})：
+\begin{table}[!htbp]
+	\caption{问题二求解结果} 
+	\label{tab:qu2-res-all}
+	\centering
+	\begin{tabular}{lcc} 
+		\toprule[1.5pt] 
+        & 附件一求解结果       & 附件二求解结果       \\
+        \midrule[1pt] 
+        AB单位向量        & (0.9954 , 0.0961 , 0.0002) & (0.9704 , 0.2413 , 0.0048) \\
+        AB直线距离(万米)    & 10.046                     & 10.305                     \\
+        总校正点个数        & 611                        & 325                        \\
+        需要校正点个数       & 8                          & 12                         \\
+        航迹长度(m)       & 106398.093                 & 111688.3089                \\
+        相比于问题一航迹增加(m) & 48.0322                    & 102.789                    \\
+        贪心策略偏向        & 夹角偏向                       & 有效距离(投影)偏向                 \\
+        求解时间(s)       & 1.072                      & 1.799     \\     
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+观察航迹轨迹图(\ref{fig:res-qu2-1})和图(\ref{fig:res-qu2-2})，与问题一航迹大致相同，只是在校正点列$P$处,会有一小段光滑的圆弧线，但是由于圆弧总长度与航迹总长度之比过小，从而导致圆弧部分在三维图中显示不太清晰。这个部分在局部图(\ref{fig:res-qu2-1-add})和图(\ref{fig:res-qu2-2-add})中的右边三张图中更加明显，尤其是局部X0Y截面，拥有我们在图(\ref{fig:qiexian})设计的效果。
+
+\crb{ 然而因为选取的半径为最小旋转半径$R = \mathcal{R}(\Omega_{i}) = 200m$与航迹长度数量级相差太大，Dubins曲线引入造成的变化很细微，与问题一航迹的总长度相差100多倍。} 而在问题一结果表(\ref{tab:res-qu1-1})的航迹规划中，平滑折线段带来的误差增加完全在优化问题(\ref{eq:qu1-latest})限制可以容忍的范围内，所以我们得到的航迹结果符合物理事实。
+
+\subsubsection{问题二算法有效性\&复杂度分析}
+对于有效性，给定合适的初始解，确保非线性方程组迭代收敛到解附近，完成曲线轨迹的求解；经验证，飞行器在按照曲线轨迹能及时校正垂直和水平误差，成功到达终点；在选择方向向量求解曲线轨迹时，定义其指向终点，在一定程度上减少计算量和轨迹长度。
+
+我们算法的运行时间都在2s以内，算法复杂度相对较低。
+
+\begin{enumerate}
+    \item 时间复杂度：相比于问题一，问题二在每次寻校正点时多引入了非线性方程组的求解，为减少计算量，先以线段距离筛选符合校验误差的点集，再解方程得到曲线轨迹，计算实际距离，验证是否满足校验误差要求，减少解方程的次数，其时间复杂度为$\mathcal{O}(N)$*$\mathcal{O}(f)$，其中$\mathcal{O}(f)$为解方程时间复杂度。在需要解非线性方程组的前提下，迭代更新初始解需要占大量时间，迭代寻优的复杂度为$\mathcal{O}(N^2)*\mathcal{O}(f)$。
+	\item 空间复杂度：和问题一中类似，但会占用更多的空间资源来完成航迹规划。
+\end{enumerate}
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{问题三模型建立及求解}
+问题一中我们根据(1-7)的约束，对优化问题(\ref{eq:qu1-latest})实行了一系列的求解策略设计并在两个场景下进行了计算分析；问题二中，我们对优化问题(\ref{eq:qu1-latest})加入了没有即时转弯和转弯半径、曲率的限制，也实现了A、B点之间的航迹规划。现在，问题三也需要在问题一的基础上添加校正点属性的约束，重新设计规划方案。
+
+\subsection{问题描述及分析}
+求解问题一，我们航迹求解只需要求其满足误差约束即可，没有不确定因素的存在，但是这与实际不符。现实的飞行器飞行会受到人为、自然的干扰受到各种约束。此问题中，我们考虑因为校正点无法理想化校正带来的影响(校正后误差不能100\%清零)。飞行器在该部分校正点能够成功将误差校正为0的概率是80\%，如果校正失败，仍然能校正一部分误差，只是没法理想化的清零。
+
+问题三需在问题一的基础上，考虑校正点的属性。且要求飞行器在飞行前已经规划好航迹，必须按照既定的航迹路径从出发点A飞行到终点B。
+
+\subsection{模型建立}
+记$\tau_i$为待选取的点列$P_i$的属性，它为:
+\begin{equation}\label{eq:label}
+    \tau_i = \begin{cases}
+    0 & \text{ if} \quad P_i \text{ 是正常校正点 } \\ 
+    1 & \text{ if} \quad P_i   \text{ 是可能出现问题的点} 
+    \end{cases}
+\end{equation}
+
+那么在理想情况$\tau_i = 0$或$(\tau_i = 1 \& \text{校正成功情况} )$，校正误差后为：
+\begin{equation}
+    \left\{\begin{matrix}
+        \zeta_{i} = \zeta_{i}' \times (1- \Gamma_{i} )  \\
+        \eta_{i} = \eta_{i}' \times \Gamma_{i}
+    \end{matrix}\right.
+    \end{equation}
+
+其中，$ \mathbb{P} $是可能出现问题的点出现问题的概率$\mathbb{P} = 20 \%$。
+
+非理想情况$(\tau_i = 1 \& \text{校正失败情况})$时，校正误差后变为：
+\begin{equation}\label{eq:sibai}
+    \left\{\begin{matrix}
+        \zeta_{i} = \min (\zeta_{i}' ,5) \times  \Gamma_{i} + \zeta_{i}'\times  (1-\Gamma_{i})\\
+        \eta_{i} = \eta_{i}' \times  \Gamma_{i} + \min (\eta_{i}' ,5)\times (1- \Gamma_{i})
+    \end{matrix}\right. 
+\end{equation}
+
+在这样的场景下，重新规划问题一中所要求的航迹，最大化成功到达终点的概率$F$。因此，结合问题一中的目标函数(\ref{eq:obj1})和(\ref{eq:obj2})，引入权衡系数$w_3$，提出了新的目标函数。
+\begin{equation}\label{eq:obj-all-sum}
+    \min \quad w_1\sum_{i=0}^n D_{ii+1} + w_2 n - w_3 F
+\end{equation}
+
+其中，$F$为规划出的航迹路径从A成功到达终点B的概率，其具体数值将在规划航迹结束后通过蒙特卡罗仿真得出。
+
+\subsection{算法设计}
+此问题中，如果某个类型的校正点校正失败，反映到航迹规划上时体现为该类型误差余量的增加，进而会影响到下一个校正点类型的选择以及范围的选择，该影响将一直持续到飞行器经过下一个同类型的能百分之百校正正确的校正点。由此可得，各个校正点之间是有相互影响的，前面校正失败的点会影响后面校正点的选择，这种影响属于链式效应，这使得概率论中大部分基于独立事件的定理无法在此得到应用。
+
+该问题的目标函数为式(\ref{eq:obj-all-sum}),希望航迹总长度要小、经过校正点的个数少，同时还要使得成功到达终点的概率要尽可能的大。综合考虑这三方面的要求，寻找一个折中的航迹路线是我们希望得到的解。
+
+从极端情况来重新考虑这个问题。假设所有校正点都能校正成功，则此问题退化到问题一，即和问题一同解，此时航迹的总长度最短、经过的校正点的个数最少，但对应的成功概率是最小的，因为在我们问题一的贪心策略的驱动下，点之间的移动逼近校正点能校正的误差容限，只要有一点校正失败，就有很大概率不能到达终点，这样对应的成功概率是最小的。
+
+相反，再考虑另外一种极端情况，搜寻过程中待选取的所有可能校正失败的点全部校正失败，即经过这些点误差都变成式(\ref{eq:sibai})。若在该情况下如果还能找到一条符合要求的路径，则验证过程蒙特卡罗仿真该条航迹的成功到达率肯定为100\%。只是此时航迹总长度相对较长、经过的校正点的个数也相对较多。
+
+其他情况的成功概率介于这两种极端情况之间(类似于夹逼定理)。因此我们将剩余误差量化分析，将校正失败的概率$ \mathbb{P} $转化成误差余量的幅度$\mu$。搜寻过程中一旦搜寻到这些有概率校正失败的点即让其修正后误差为式(\ref{eq:sibai-latest})。
+\begin{equation}\label{eq:sibai-latest}
+    \left\{\begin{matrix}
+        \zeta_{i} =\mu \times \min (\zeta_{i}' ,5) \times  \Gamma_{i} + \zeta_{i}'\times  (1-\Gamma_{i}) \\
+        \eta_{i} =  \eta_{i}' \times  \Gamma_{i} +  \mu \times \min (\eta_{i}' ,5)\times (1- \Gamma_{i}) 
+    \end{matrix}\right. 
+\end{equation}
+
+将$\mu$在区间$(0,1)$之间遍历，观察各种航迹与成功率、航迹总长度、校正点个数之间的关系，从而为确定一种折中的策略提供分析基础。实际计算过程中，将$\mu$的变化区间分成100份，以0.01的步进进行搜索。
+
+\subsection{问题三求解结果}
+利用所述策略对两个附件进行求解。
+
+首先对数据附件一、二进行$\mu$为$(0,1)$的遍历，观察不同$\mu$下成功率、航迹总长度、校正点个数的变化情况。此时数据一、二的遍历结果放于同一张图(\ref{fig:mu})中。其中左边三张为数据一的统计结果，右边三张为数据二的统计结果。自上而下分别为不同$\mu$下的航迹长度、校正点个数、航迹成功到达率的变化情况。
+\begin{figure} 
+	\centering
+	\subfigure[附件数据一航迹长度]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_len}
+	} \quad
+	\subfigure[附件数据二航迹长度]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_len}
+    } \\
+    \subfigure[附件数据一校正点个数]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_n}
+	} \quad
+	\subfigure[附件数据二校正点个数]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_n}
+    } \\
+    \subfigure[附件数据一航迹成功率]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_p}
+	} \quad
+	\subfigure[附件数据二航迹成功率]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_p}
+    } 
+	\caption{$\mu$的遍历情况}
+	\label{fig:mu}
+\end{figure}
+
+\newpage
+\noindent 观察很明显可以得到如下结论：
+\begin{enumerate}
+	\item 随着$\mu$的增加，附件数据一航迹长度大体先增大，后回落，最终稳定收敛.
+	\item 随着$\mu$的增加，附件数据二航迹长度和校正点个数逐渐攀升，在两端都稳定收敛.
+	\item 随着$\mu$的增加，附件数据一校正点个数和航迹路径通过成功率阶跃上升，在两端稳定收敛.
+	\item 附件数据二航迹路径到达成功率呈冲击状.
+	\item \textbf{附件数据一在$\mu \in (0,1)$中都存在解，而数据附件二在$\mu  \geq 0.32 $将搜索不到解.}
+\end{enumerate}
+
+综合考虑目标函数式(\ref{eq:obj-all-sum})三者的权衡，最大化航迹路径成功率，最小化航迹长度和校正点的个数。结合实际考虑，航迹路径到达成功率在三者中优先级较高。权衡之后，\textbf{附件数据一$\mu$取0.58(此时已经收敛，大于此值选择航迹都一样),附件数据二$\mu$取0.13 }。
+
+附件数据一需要\crb{11个校正点}进行校正(不加上起始点A、B)，此时的\crb{航迹长度为111315.64m。}
+\crb{航迹长度增长了 4965.588m。} 
+由于其校正点类型受到概率$\mathbb{P} $的影响，所以标注校正类型为其中某次蒙特卡罗仿真结果。
+各个校正点的情况如表(\ref{tab:res-qu3-1})所示。 \crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件一航迹规划结果表} 
+	\label{tab:res-qu3-1}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0     & 0     & 出发点A \\
+        521   & 9.626510211 & 9.626510211 & \multicolumn{1}{c}{01} \\
+        431   & 17.12223914 & 7.495728925 & \multicolumn{1}{c}{01} \\
+        417   & 24.33043143 & 7.208192294 & \multicolumn{1}{c}{11} \\
+        80    & 12.00373006 & 19.21192235 & \multicolumn{1}{c}{01} \\
+        237   & 16.63147462 & 4.62774457 & \multicolumn{1}{c}{11} \\
+        282   & 13.6816771 & 18.30942167 & \multicolumn{1}{c}{01} \\
+        33    & 16.15160156 & 2.469924455 & \multicolumn{1}{c}{11} \\
+        315   & 15.46007733 & 17.93000179 & \multicolumn{1}{c}{01} \\
+        403   & 23.48606594 & 8.025988609 & \multicolumn{1}{c}{11} \\
+        594   & 11.0291151 & 19.05510371 & \multicolumn{1}{c}{01} \\
+        501   & 22.22606141 & 11.19694631 & \multicolumn{1}{c}{11} \\
+        612   & 8.490014015 & 19.68696033 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+校正点间的转移距离如表(\ref{tab:qu3-1-dis})。11个校正点,加上A、B共有12段转移过程。
+\begin{table}[!htbp]
+	\caption{附件一校正点间的转移距离} 
+	\label{tab:qu3-1-dis}
+	\centering
+	\begin{tabular}{cccccc} 
+		\hline
+        A-P1  & P1-P2 & P2-P3 & P3-P4 & P4-P5 & P5-P6 \\
+        9626.5102 & 7495.728925 & 7208.192294 & 12003.7301 & 4627.745 & 13681.68 \\  \hline \hline 
+     P6-P7 & P7-P8 & P8-P9 & P9-P10  & P10-P11 & P11-B \\
+     2469.924 & 15460.08 & 8025.989 & 11029.12 & 11196.95 & 8490.014 \\     \hline 
+\end{tabular}\end{table}
+
+其航迹如图(\ref{fig:res-qu3-1}).\figcolor 绿色折线为规划的航迹路径。
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{res/que3_data1_route}
+    \caption{附件一校正点移动航迹}
+    \label{fig:res-qu3-1}
+\end{figure}
+
+附件二需要\crb{14个校正点}进行校正，此时的\crb{航迹长度为130020.40m。}
+\crb{航迹长度增长了 18434.88m。}
+由于其校正点类型受到概率$\mathbb{P} $的影响，所以标注校正类型为其中某次蒙特卡罗仿真结果。
+其各个校正点的情况如表(\ref{tab:res-qu3-2})所示。 \crb{此为题干需要表格}
+\begin{table}[!htbp]
+	\caption{附件二航迹规划结果表} 
+	\label{tab:res-qu3-2}
+	\centering
+	\begin{tabular}{cccc} 
+		\toprule[1.5pt] 
+        校正点编号 & 校正前垂直误差 & 校正前水平误差 & 校正点类型 \\
+		\midrule[1pt] 
+        0     & 0     & 0     & 出发点A \\
+        163   & 13.28789761 & 13.28789761 & \multicolumn{1}{c}{01} \\
+        114   & 18.62205093 & 5.334153324 & \multicolumn{1}{c}{11} \\
+        8     & 13.92198578 & 19.2561391 & \multicolumn{1}{c}{01} \\
+        176   & 17.7519797 & 3.829993921 & \multicolumn{1}{c}{11} \\
+        267   & 10.09105454 & 13.92104846 & \multicolumn{1}{c}{01} \\
+        148   & 16.89741582 & 6.80636128 & \multicolumn{1}{c}{11} \\
+        90    & 11.18191466 & 17.98827594 & \multicolumn{1}{c}{01} \\
+        156   & 18.88321981 & 7.701305157 & \multicolumn{1}{c}{11} \\
+        33    & 10.70223352 & 18.40353867 & \multicolumn{1}{c}{01} \\
+        289   & 19.94231439 & 9.240080873 & \multicolumn{1}{c}{11} \\
+        50    & 7.191131468 & 16.43121234 & \multicolumn{1}{c}{01} \\
+        323   & 15.1195209 & 7.92838943 & \multicolumn{1}{c}{11} \\
+        61    & 9.289476983 & 17.21786641 & \multicolumn{1}{c}{01} \\
+        292   & 15.84339087 & 6.553913884 & \multicolumn{1}{c}{11} \\
+        326   & 6.960508934 & 13.51442282 & 终点B \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+在这些校正点间的转移距离如表(\ref{tab:qu3-2-dis}),单位为m。14个校正点,加上A、B共有15段转移过程。
+\begin{table}[!htbp]
+	\caption{附件二校正点间的转移距离} 
+	\label{tab:qu3-2-dis}
+	\centering
+	\begin{tabular}{ccccccc} 
+		\hline
+        A-P1  & P1-P2 & P2-P3 & P3-P4 & P4-P5 \\ 
+        13287.898 & 5334.153324 & 13921.98578 & 3829.99392 & 10091.05 \\
+		\hline \hline
+        P5-P6 & P6-P7 & P7-P8 & P8-P9 & P9-P10  \\ 
+        6806.3613 & 11181.91466 & 7701.305157 & 10702.2335 & 9240.081 \\
+        \hline \hline
+        P10-P11 & P11-P12 & P12-P13 & P13-P14 & P14-B \\
+        7191.1315 & 7928.38943 & 9289.476983 & 6553.91388 & 6960.509 \\
+		\hline
+\end{tabular}\end{table}
+
+其航迹三维图如图(\ref{fig:res-qu3-2}).\figcolor 绿色折线为规划的航迹路径。
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{res/que3_data2_route}
+    \caption{附件二校正点移动航迹}
+    \label{fig:res-qu3-2}
+\end{figure}
+
+将图(\ref{fig:res-qu3-1})和图(\ref{fig:res-qu3-2})可视化其各个视角视图(X0Y截面、X0Z截面、YOZ截面),如图(\ref{fig:res-qu3-2-add})。左边三张为附件数据一的截面图，右边三张为附件数据二的截面图。
+\begin{figure}[!htbp]
+	\centering
+	\subfigure[附件数据一X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_xoy}
+	} \quad
+	\subfigure[附件数据二X0Y截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_xoy}
+    } \\
+    \subfigure[附件数据一X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_xoz}
+	} \quad
+	\subfigure[附件数据二X0Z截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_xoz}
+    } \\
+    \subfigure[附件数据一YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data1_yoz}
+	} \quad
+	\subfigure[附件数据二YOZ截面]{
+		\includegraphics[width=0.45\textwidth]{res/que3_data2_yoz}
+    } 
+	\caption{附件一二校正点移动航迹各个截面投影}
+	\label{fig:res-qu3-2-add}
+\end{figure}
+
+
+
+\newpage
+\subsection{结果对比分析}
+
+两个数据进行求解，其结果对比于表(\ref{tab:qu3-res-all})：
+\begin{table}[!htbp]
+	\caption{问题三求解结果} 
+	\label{tab:qu3-res-all}
+	\centering
+	\begin{tabular}{lcc} 
+		\toprule[1.5pt] 
+        & 附件一求解结果       & 附件二求解结果       \\
+        \midrule[1pt] 
+        AB单位向量        & (0.9954 , 0.0961 , 0.0002) & (0.9704 , 0.2413 , 0.0048) \\
+        AB直线距离(万米)    & 10.046                     & 10.305                     \\
+        总校正点个数        & 611                        & 325                        \\
+        $\mu$的取值         & 0.58                       & 0.13                       \\
+        $\mu$存在解范围    & $(0,1)$                    & $\leq 0.32 $               \\
+        需要校正点个数       & 11                         & 14                         \\
+        航迹长度(m)       & 111315.65                  & 130020.4                   \\
+        航迹路径通过成功率     & 100 \%                   & 41.63 \%                     \\
+        相比于问题一航迹增加(m) & 4965.588                   & 18434.88                \\
+        贪心策略偏向        & 夹角偏向                       & 有效距离(投影)偏向                 \\
+        求解时间(s)       & 33.911                     & 14.405 \\
+		\bottomrule[1.5pt] 
+\end{tabular}\end{table}
+
+由图(\ref{fig:mu})明显看出$\mu$在不同的数据集下影响差异较大，附件一拥有较多的数据点，空间分布密度较大，在$\mu$变化的过程中都能寻到较优解，而对于数据集二，空间分布密度小，因此对有问题的校正点的容忍度低，过多的校正失败将使其寻解失败，故在$\mu \geq 0.32 $寻解失败。正因为如此，严重影响了航迹路径通过成功率，使得数据集二的成功率远远低于数据集一。
+
+另外对于数据一，在$\mu$较大或较小时都能实现稳定收敛，取$\mu \geq 0.58 $时其航迹是一样的，文中仅取了$\mu = 0.58 $。
+
+另一方面，图(\ref{fig:res-qu3-1})和图(\ref{fig:res-qu3-2})中的航迹路径波动比问题一中得到的结果大许多，这也是其航迹路径明显增大的直接原因。在图(\ref{fig:res-qu3-2-add})中可以看出，Y0Z平面航迹被限在较小范围内，XOY平面中y轴也体现不出明显的变化，航迹波动很大程度上是因为航迹在z轴方向的剧烈波动。
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{模型评价和推广}
+\subsection{模型的评价}
+
+\noindent \emph{优点：}
+\begin{enumerate}
+    \item 数学表述清晰，模型目标、约束等完整。
+    \item 在策略选择方面，受到启发式算法的启发，综合考虑了实际不同情况下的贪婪策略，分别对附件一、二数据采用不同的策略选择偏向 。
+    \item 用策略寻优替代最优化模型的求解，可在极短的时间内求出各自的较优解，算法复杂度低。
+    \item 问题二中，结合实际现实，飞行器的航迹应是光滑的，即处处连续可导，所采用的Dubins曲线可认为是连接局部两个二维平面的最短路径，既符合约束条件又满足实际需求。
+    \item 在问题三的问题简化过程中，将概率可能性转化为幅度进行量化分析，将不确定因素转化成确定变量进行计算。
+    \item 在问题三结果的验证方面，采用蒙特卡洛法模拟飞行器可达到终点的成功率，从而验证模型的可靠性。
+    \item 在结果的呈现方面，不仅利用三维图像可视化结果，有利于直观地分析航迹选择的好坏，对于策略的选择具有直接的指导帮助；而且展现不同视角的截面图和局部图，观察各个问题细节辅助分析。	
+	\item 在结果分析方面，将飞行器航迹投影到不同平面，从不同维度比较分析了在附件一、二数据环境下航迹的特点，可将分析结果反馈到策略的选择上，有利于模型的收敛。
+\end{enumerate}
+
+\noindent \emph{缺点：}
+\begin{enumerate}
+    \item 由于算法贪心策略的选择，会使解落入局部最优解中，未必能得到最优的方案。
+	\item 当选择分支过多的时候，由于选择的简化，会失去一些更优解。
+	\item 计算机模拟的随机是伪随机，可能会导致问题三中计算的成功率与真实值存在偏差。
+\end{enumerate}
+
+\subsection{模型推广}
+
+依据题目中提供的背景及附表数据，我们建立了智能飞行器航迹快速规划模型，并采用贪婪算法的相关知识，在满足约束条件的情况下使得航迹总长度尽量短，经过的校正点尽量少，对二维、三维空间的路径搜索问题有一定的参考价值。
+
+模型中分析问题，解决问题的一些独到方法，对其他数学问题及一般模型仍可使用，尤其是贪婪思想合理运用到高维问题中将大大简化计算量。
+
+另外，针对实际情况下由于天气等原因导致飞行器存在一定概率校正失败的问题，我们的方法对于飞行器航迹规划部门可以作为分析解决问题的一种参考。
+
+
+
+
+
+
+
+
+
+

@@ -59,6 +59,7 @@
 \RequirePackage{makeidx} % 索引
 \RequirePackage[nottoc]{tocbibind} % 将参考文献、索引、表格目录和图形
 \RequirePackage[numbers,sort&compress]{natbib} % 修改引用参考文献格式
+\bibliographystyle{thuthesis-numeric}
 \RequirePackage{array} % 扩展了 array 和 tabular 环境功能
 \RequirePackage{caption} % 定义图的标题格式：居中. 使用caption3.0
 \captionsetup{%
@@ -785,7 +786,7 @@ BoldItalicFont=timesbi.ttf
 % my change
 \newif\ifthu@bachelor
 \def\thudot{\ifthu@bachelor\else\unskip.\fi}
-\bibliographystyle{thuthesis-numeric}
+
 % my change
 %\renewcommand\@biblabel[1]{#1}  % Reference list option change from [1] to 1
 \let\orig@bibliography=\bibliography
