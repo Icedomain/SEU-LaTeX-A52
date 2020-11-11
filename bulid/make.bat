@@ -1,7 +1,7 @@
-xelatex hxythesis.tex
-bibtex  hxythesis.aux
-xelatex hxythesis.tex
-xelatex hxythesis.tex
+xelatex main.tex
+bibtex  main.aux
+xelatex main.tex
+xelatex main.tex
 del *.aux /s
 del *.bak /s
 del *.log /s
