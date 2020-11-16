@@ -21,7 +21,7 @@
 2. 研究生论文版式经过多个版本的迭代，基本满足学位论文的各个点，但仍然不保证与学校要求完全相同。
 3. 本版本含完整的编译文件 <font color='red'> cmd bat file in Windows and bash file in MacOS/Linux </font>。如使用编译器，选择xelatex编译方式(已设置默认)。
 4. 本人为学术硕士，本版本的改进主要在master的类上，但是专业硕士和博士只需要改主文档的类型即可。
-5. 模板bug欢迎反馈，但是各种编写问题建议百度/Google，本菜鸡还在找工作ing。
+5. 模板bug欢迎反馈，但是各种编写问题建议百度/Google。
 
 ### LaTeX 环境
 
