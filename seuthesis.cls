@@ -59,7 +59,7 @@
 \RequirePackage{makeidx} % 索引
 \RequirePackage[nottoc]{tocbibind} % 将参考文献、索引、表格目录和图形
 \RequirePackage[numbers,sort&compress]{natbib} % 修改引用参考文献格式
-\bibliographystyle{thuthesis-numeric}
+\bibliographystyle{ref/thuthesis-numeric}
 \RequirePackage{array} % 扩展了 array 和 tabular 环境功能
 \RequirePackage{caption} % 定义图的标题格式：居中. 使用caption3.0
 \captionsetup{%
