@@ -1,13 +1,13 @@
 # SEU-LaTeX-A52
 
-胡欣毅 A5206 邮箱: [icedomain_hu@qq.com](icedomain_hu@qq.com)
+胡欣毅 工位:无线谷A5206 邮箱: [icedomain_hu@qq.com](icedomain_hu@qq.com)
 
 本版本根据[seuthesis](https://github.com/latexstudio/seu-latex)更改而来，其根源为[xuyuan](https://github.com/xuyuan)的[seuthesis](https://github.com/xuyuan/seuthesis)的模版，技术细节请参考[清华大学 thuthesis](https://mirrors.tuna.tsinghua.edu.cn/github-release/tuna/thuthesis/thuthesis-v7.1.0.zip)。
 
 ### 终版论文编译
 
-- 最终版本使用xelatex-bibtex-xelatex-xelatex交叉编译完成上交。
-- 最终版本更改 main.tex 头部 \documentclass[master,nocolorlinks]{seuthesis} 进行去颜色打印(带颜色打印容易不清晰)。
+- 最终电子版本使用xelatex-bibtex-xelatex-xelatex交叉编译完成上交。
+- 最终打印版本更改 main.tex 头部 \documentclass[master,nocolorlinks]{seuthesis} 进行去颜色打印(带颜色打印容易不清晰)。
 
 ### 注意
 
@@ -44,28 +44,27 @@
 - .tex : 主文档
 - .cls : 文件类格式定义
 - .cfg : 文件格式说明及定义
-
 - a3cover : 为A3/A4封页,不要使用tex文件编译,使用bat或者sh文件
 - build : 编译文件(终版建议使用)
 - chap : 含主文档导入的各个章节，便于分节编译(建议更改文件名)
-    * Abstract : 摘要
+    * Abstract : 摘要(不要超过两页)
     * terminology : 注释表、缩略词
-    * intro : 绪论
-    * back : 背景综述
-    * point1 : 自己的第一个点
-    * point2 : 自己的第二个点
-    * point3 : 自己的第三个点
-    * Improve : 展望部分
-    * Thanks : 致谢
-    * Appendix : 附录
+    * intro : 绪论(6-7页)
+    * back : 背景综述(20页以内)
+    * point1 : 自己的第一个点(15页上下)
+    * point2 : 自己的第二个点(15页上下)
+    * point3 : 自己的第三个点(15页上下)
+    * Improve : 展望部分(2-4页)
+    * Thanks : 致谢(写诗)
+    * Appendix : 附录(理论证明及大体量的图表,看个人发挥，不限版页)
     * Resume : 个人简介
 - example : 一个中长篇幅的TeX文档demo
 - figures : 默认为格式图片
 - font : 文档所需字体
 - image : 个人图片
-- ref : 参考文件bib
+- ref : 参考文件
     * .bst : 参考文献格式定义
-    * seuthesis : 参考文献bib文件(arixv/Google学术/百度学术处拷贝)
+    * .bib : 参考文献bib文件(arixv/Google学术/百度学术处拷贝)
 - 杂 : 含各个说明文件
 
 
