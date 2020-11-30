@@ -1,0 +1,145 @@
+% !TeX encoding = UTF-8
+% !TEX TS-program = xelatex
+
+
+\documentclass{beamer}
+\usepackage{ctex}
+\renewcommand{\today}{2021~年~5~月~25~日}
+%\CTEXoptions[today=old]
+
+\usetheme{CambridgeUS}
+\pgfdeclareimage[width=\paperwidth,height=\paperheight]{bg}{figures/seu_background}
+\setbeamertemplate{background}{\pgfuseimage{bg}}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+%\addtobeamertemplate{block begin}{}{\justifying}
+% gets rid of navigation symbols
+%\setbeamertemplate{navigation symbols}{}
+
+% add figures numbering
+%\setbeamertemplate{caption}[numbered]
+
+
+%\usepackage{cmbright} % computer modern font sans serif
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+\usepackage{appendixnumberbeamer} % Number for appendix numbers
+\usepackage{ragged2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{subfigure}
+\graphicspath{{./image/}}
+\usepackage{hyperref}
+\hypersetup{
+    %bookmarks=true,                    % show bookmarks bar?
+    unicode=false,                      % non-Latin characters in Acrobat’s bookmarks
+    pdftoolbar=true,                    % show Acrobat’s toolbar?
+    pdfmenubar=true,                    % show Acrobat’s menu?
+    pdffitwindow=false,                 % window fit to page when opened
+    pdfstartview={FitH},                % fits the width of the page to the window
+    %pdftitle={My title},               % title
+    %pdfauthor={Author},                % author
+    %pdfsubject={Subject},              % subject of the document
+    %pdfcreator={Creator},              % creator of the document
+    %pdfproducer={Producer},            % producer of the document
+    %pdfkeywords={keyword1} {key2},     % list of keywords
+    %pdfnewwindow=true,                 % links in new window
+    colorlinks=true,                    % false: boxed links; true: colored links
+    linkcolor=black,                    % color of internal links (change box color with linkbordercolor)
+    citecolor=green,                    % color of links to bibliography
+    filecolor=magenta,                  % color of file links
+    urlcolor=red                    % color of external links
+}
+
+
+% gets rid of bottom navigation bars
+%\setbeamertemplate{footline}[page number]{}
+%\setbeamertemplate{headline}{}
+%\setbeamerfont{frametitle}{family=\bfseries}
+%\setbeamerfont{myTOC}{series=\bfseries,size=\normalfont}
+%\usebeamerfont{myTOC}\tableofcontents[current]}}
+
+
+\beamertemplateballitem
+\AtBeginSection[]
+{
+	\begin{frame}<beamer>
+	\frametitle{\textbf{目录}}
+	\textbf{\tableofcontents[currentsection]}
+\end{frame}
+}
+
+
+
+\title[下标]{题目}
+\subtitle{子题目}
+
+\author[名字缩写]{名字\\
+xxx@seu.edu.cn}
+
+\institute[SEU]
+{信息科学与工程学院 \\
+	东南大学  \\ \vspace{.3cm}
+\centering \includegraphics[width=0.15\linewidth]{figures/seu-color-logo}  
+}
+
+\date{\today}
+
+
+\begin{document}
+%------------------------------------------------
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section*{目录}
+
+\begin{frame}
+\frametitle{\textbf{目录}}
+\textbf{\tableofcontents}
+\end{frame}	
+
+
+
+\section{xx} 
+\begin{frame}
+\frametitle{\textbf{ }}
+xx
+
+\end{frame}
+
+
+
+
+
+
+\section*{}
+\begin{frame}
+\Huge \centering $\mathcal{THANK \ 　YOU!}$
+\end{frame}
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{\textbf{ }}
+
+
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
