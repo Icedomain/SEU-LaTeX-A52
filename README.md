@@ -65,6 +65,7 @@
 - ref : 参考文件
     * .bst : 参考文献格式定义
     * .bib : 参考文献bib文件(arixv/Google学术/百度学术处拷贝)
+- tool : 给予一个py文件，用于批处理pdf图像白边(仅TeXLive可用) 亦可直接使用pdfcrop工具去除图像白边
 - 杂 : 含各个说明文件
 
 
