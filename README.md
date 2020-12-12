@@ -7,7 +7,9 @@
 ### 终版论文编译
 
 - 最终电子版本使用xelatex-bibtex-xelatex-xelatex交叉编译完成上交。
+- Linux下 <font color='red'> bash bulid/make.sh </font> (MacOS下类似，Windows下cmd下 bulid/make.bat)
 - 最终打印版本更改 main.tex 头部 \documentclass[master,nocolorlinks]{seuthesis} 进行去颜色打印(带颜色打印容易不清晰)。
+- A3封页进 a3cover下 双击bat文件(Windows)/bash a3cover.sh(MacOS/Linux)
 
 ### 注意
 
