@@ -18,8 +18,10 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{multirow,makecell}
+\usepackage{enumitem}
 \usepackage{breqn}
 \usepackage{mathrsfs}
+\usepackage{tikz}
 \usepackage{datetime}
 \renewcommand{\today}{2021~年~5~月~25~日}
 \renewcommand{\todayeng}{May , 2021}
@@ -34,9 +36,9 @@
 %\DeclareMathOperator{\sign}{sign} 
 
 \begin{document}
-\categorynumber{000} % 分类采用《中国图书资料分类法》
-\UDC{000}            %《国际十进分类法UDC》的类号
-\secretlevel{公开}    %学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
+\categorynumber{TP391} % 分类采用《中国图书资料分类法》
+\UDC{621.3}            %《国际十进分类法UDC》的类号
+\secretlevel{公开}      % 学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
 \studentid{18xxxx}   %学号要完整，前面的零不能省略。
 
 \title{基于深度学习的希腊字母研究}{子标题,可以没有}{Thesis Title}{subtitle}
@@ -70,7 +72,7 @@
 
 \begin{Main}
 	\input{chap/intro}
-	\input{chap/back}
+	\input{chap/bg}
 	\input{chap/point1}
 	\input{chap/point2}
 	\input{chap/point3}
@@ -85,11 +87,10 @@
 \bibliography{ref/seuthesis}
 
 
-\newpage
-\printindex % 索引
+%\newpage
+%\printindex % 索引
 
 % 附录
-\setcounter{page}{1}
 \begin{Appendix}
 \input{chap/Appendix}
 \end{Appendix}
