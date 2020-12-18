@@ -59,7 +59,7 @@
 \RequirePackage{makeidx} % 索引
 \RequirePackage[nottoc]{tocbibind} % 将参考文献、索引、表格目录和图形
 \RequirePackage[numbers,sort&compress]{natbib} % 修改引用参考文献格式
-\bibliographystyle{ref/thuthesis-numeric}
+
 \RequirePackage{array} % 扩展了 array 和 tabular 环境功能
 \RequirePackage{caption} % 定义图的标题格式：居中. 使用caption3.0
 \captionsetup{%
@@ -199,18 +199,27 @@ BoldItalicFont=timesbi.ttf
   \fi
 }
 \ifnocolorlinks
-\hypersetup{colorlinks=false}
-\else
-\hypersetup{colorlinks=true}
-\fi
 \hypersetup{
-  linkcolor=blue,
-  anchorcolor=black,
-  citecolor=olive,
-  filecolor=magenta,
-  menucolor=red,
-  urlcolor=magenta
+linkcolor=black,
+anchorcolor=black,
+citecolor=black,
+filecolor=magenta,
+menucolor=red,
+urlcolor=black
 }
+% \hypersetup{colorlinks=false}
+\else
+\hypersetup{
+linkcolor=blue,
+anchorcolor=black,
+citecolor=olive,
+filecolor=magenta,
+menucolor=red,
+urlcolor=magenta
+}
+\fi
+\hypersetup{colorlinks=true}
+
 
 \newpagestyle{seustyle}{
 	\sethead[][{\song{}\xiaowuhao{} 东南大学硕士学位论文 }][] % 偶数页
