@@ -79,8 +79,8 @@
 \RequirePackage{algpseudocode}
 \floatname{algorithm}{算法}
 \renewcommand{\listalgorithmname}{算法目录}
-\renewcommand{\listfigurename}{插图目录}
-\renewcommand{\listtablename}{表格目录}
+% \renewcommand{\listfigurename}{插图目录}
+% \renewcommand{\listtablename}{表格目录}
 \renewcommand{\algorithmicrequire}{\textbf{输入:}}
 \renewcommand{\algorithmicensure}{\textbf{输出:}}
 % my change
