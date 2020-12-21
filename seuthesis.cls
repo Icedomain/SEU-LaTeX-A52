@@ -79,8 +79,6 @@
 \RequirePackage{algpseudocode}
 \floatname{algorithm}{算法}
 \renewcommand{\listalgorithmname}{算法目录}
-% \renewcommand{\listfigurename}{插图目录}
-% \renewcommand{\listtablename}{表格目录}
 \renewcommand{\algorithmicrequire}{\textbf{输入:}}
 \renewcommand{\algorithmicensure}{\textbf{输出:}}
 % my change
@@ -160,8 +158,9 @@ BoldItalicFont=timesbi.ttf
   font={capFont},%
   figurename=图,%
   tablename=表,%
-  listfigurename=插图目录,%
-  listtablename=表格目录}
+  %listfigurename=插图目录,%
+  %listtablename=表格目录
+  }
 
 \RequirePackage{hyperref}
 \AtBeginDocument{\CJKindent{}%
