@@ -205,7 +205,7 @@ linkcolor=black,
 anchorcolor=black,
 citecolor=black,
 filecolor=magenta,
-menucolor=red,
+menucolor=black,
 urlcolor=black
 }
 % \hypersetup{colorlinks=false}
@@ -223,11 +223,11 @@ urlcolor=magenta
 
 
 \newpagestyle{seustyle}{
-	\sethead[][{\song{}\xiaowuhao{} 东南大学硕士学位论文 }][] % 偶数页
-	{}{	{\song{}\xiaowuhao{} 第 ~\thechapter ~ 章 ~ \quad  \chaptertitle }}{} % 奇数页
-	\setfoot[][{\song{}\xiaowuhao{} 第 ~ \thepage ~ 页 }][] % 偶数页 
-	{}{\song{}\xiaowuhao{} 第 ~\thepage ~ 页 }{} % 奇数页
-	\headrule 
+  \sethead[][{\song{}\xiaowuhao{} 东南大学\@academicdegree }][] % 偶数页
+  {}{ {\song{}\xiaowuhao{} 第 ~\thechapter ~ 章 ~ \quad  \chaptertitle }}{} % 奇数页
+  \setfoot[][{\song{}\xiaowuhao{} 第 ~ \thepage ~ 页 }][] % 偶数页 
+  {}{\song{}\xiaowuhao{} 第 ~\thepage ~ 页 }{} % 奇数页
+  \headrule 
 }
 
 
@@ -236,10 +236,10 @@ urlcolor=magenta
 }
 
 \newpagestyle{seunolabelstyle}{
-	\sethead[][{\song{}\xiaowuhao{}东南大学硕士学位论文 }][]
-	{}{{\song{}\xiaowuhao{} 东南大学硕士学位论文 }}{}
-	\setfoot{}{ \song{}\xiaowuhao{} 第 ~\thepage ~ 页 }{}
-	\headrule
+  \sethead[][{\song{}\xiaowuhao{} 东南大学\@academicdegree }][]
+  {}{{\song{}\xiaowuhao{} 东南大学\@academicdegree }}{}
+  \setfoot{}{ \song{}\xiaowuhao{} 第 ~\thepage ~ 页 }{}
+  \headrule
 }
 
 \renewpagestyle{plain}{
