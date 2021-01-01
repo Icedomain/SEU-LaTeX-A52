@@ -38,8 +38,11 @@
 
 - 协同协作平台 [overleaf](https://www.overleaf.com/)
 - 大表格快速导出TeX语法 [Excel2latex](https://www.ctan.org/tex-archive/support/excel2latex/)
+- 在线LaTeX表格 [链接](https://www.tablesgenerator.com/latex_tables)
 - 可视化公式 [klatexformula](https://klatexformula.sourceforge.io/)
 - 截取他人公式为TeX语法 [mathpix](https://mathpix.com/)
+- 在线LaTeX公式 [链接](https://latex.codecogs.com/eqneditor/editor.php)
+- VSCode 插件自带公式快捷
 
 ### 文档结构(不懂慎删)
 
@@ -67,7 +70,6 @@
 - ref : 参考文件
     * .bst : 参考文献格式定义
     * .bib : 参考文献bib文件(arixv/Google学术/百度学术处拷贝)
-- tool : 给予一个py文件，用于批处理pdf图像白边(仅TeXLive可用) 亦可直接使用pdfcrop工具去除图像白边
 - 杂 : 含各个说明文件
 
 
@@ -82,13 +84,7 @@
 ### 2020.12.18 版本修改
 
 * 更改　nocolorlinks设置，去除红框和参考文献的绿框等
-
-### 2020.11.30 版本修改
-
 * 添加一个简单版本的beamer,辅以答辩PPT制作
-
-### 2020.11.23 版本修改
-
 * 修改中英文时间设置错误
 
 ### 2020.11.11 版本修改
