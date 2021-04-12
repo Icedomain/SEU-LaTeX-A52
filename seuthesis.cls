@@ -493,13 +493,16 @@ urlcolor=magenta
   \begin{center}
     \xiaochuhao
     \includegraphics[height=0.63in]{figures/seu-text-logo}
-
+	
+	\ifengineering
+	{\includegraphics[height=30pt,bb=0 0 484 55]{figures/engineering.png}}
+	\else
     \ifmasterdegree
     \includegraphics{figures/master-hwzs}
     \else
     \includegraphics{figures/doctor-hwzs}
     \fi
-
+	\fi
     \vspace{31.5pt}
 
     \linespacing{1.25}
@@ -625,7 +628,11 @@ urlcolor=magenta
           \fi
         Submitted to}\\
         {\universitynameeng}\\
-        {For the Academic Degree of \academicdegreeeng}\\
+        {\ifengineering
+        {For the Professional Degree of \academicdegreeeng}
+        \else
+        {For the Academic Degree of \academicdegreeeng}
+        \fi }\\
         {\vspace{0.5in}}%
         {BY}\\
         {\@authoreng}\\
