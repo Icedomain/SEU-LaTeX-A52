@@ -749,8 +749,10 @@ urlcolor=magenta
 
 \cleardoublepage
 \phantomsection
+\pagestyle{seunolabelstyle}
 \addcontentsline{toc}{chapter}{\listalgorithmname}
 \listofalgorithms
+\clearpage
 
 
 }
