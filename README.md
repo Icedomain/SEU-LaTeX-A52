@@ -2,6 +2,8 @@
 
 胡欣毅 工位:无线谷A5206 邮箱: [icedomain_hu@qq.com](icedomain_hu@qq.com)
 
+==本人已毕业，后续不再维护==
+
 本版本根据[seuthesis](https://github.com/latexstudio/seu-latex)更改而来，其根源为[xuyuan](https://github.com/xuyuan)的[seuthesis](https://github.com/xuyuan/seuthesis)的模版，技术细节请参考[清华大学 thuthesis](https://mirrors.tuna.tsinghua.edu.cn/github-release/tuna/thuthesis/thuthesis-v7.1.0.zip)。
 
 ### 终版论文编译
@@ -75,6 +77,10 @@
 
 
 ## 更新
+
+### 2021.05.27 版本修改
+
+* 细微bug修复
 
 ### 2021.05.10 版本修改
 

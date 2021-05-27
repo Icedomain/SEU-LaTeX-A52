@@ -413,7 +413,7 @@ urlcolor=magenta
     \end{picture}
     \else
     \begin{picture}(0,0)(-101,255)
-      {\includegraphics[height=40pt,bb=0 0 1149 150]{figures/{\@degreepic}.png}}
+      {\includegraphics[height=40pt,bb=0 0 1149 150]{figures/master.png}}
     \end{picture}
     \fi
     \begin{picture}(0,0)(-350,50)
@@ -811,7 +811,7 @@ urlcolor=magenta
 \let\orig@bibliography=\bibliography
 \renewcommand{\bibliography}[1]{
   \orig@bibliography{#1}
-  \pagestyle{seustyle}\clearpage % 使参考文献使用 seunolabel 页面样式
+  \pagestyle{seufrontstyle}\clearpage % 使参考文献使用 seunolabel 页面样式
   \pagestyle{seufrontstyle}} % 恢复原有样式给后续部分
 \newenvironment{Acknowledgement}[1][\@acknowledgementtitle]
 {%
