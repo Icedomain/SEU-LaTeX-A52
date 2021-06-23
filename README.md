@@ -1,8 +1,8 @@
 # SEU-LaTeX-A52
 
-胡欣毅 工位:无线谷A5206 邮箱: [icedomain_hu@qq.com](icedomain_hu@qq.com)
+胡欣毅（MIMO实验室，工位:无线谷A5206) 邮箱: [icedomain_hu@qq.com](icedomain_hu@qq.com)
 
-==本人已毕业，后续不再维护==
+==本人已于2021年夏毕业，后续不再维护==
 
 本版本根据[seuthesis](https://github.com/latexstudio/seu-latex)更改而来，其根源为[xuyuan](https://github.com/xuyuan)的[seuthesis](https://github.com/xuyuan/seuthesis)的模版，技术细节请参考[清华大学 thuthesis](https://mirrors.tuna.tsinghua.edu.cn/github-release/tuna/thuthesis/thuthesis-v7.1.0.zip)。
 
@@ -48,7 +48,8 @@
 
 ### 文档结构(不懂慎删)
 
-- .tex : 主文档
+- main.tex : 主文档
+- ThesisPPT.tex : 配套beamer (PPT)
 - .cls : 文件类格式定义
 - .cfg : 文件格式说明及定义
 - a3cover : 为A3/A4封页,不要使用tex文件编译,使用bat或者sh文件
@@ -72,15 +73,16 @@
 - ref : 参考文件
     * .bst : 参考文献格式定义
     * .bib : 参考文献bib文件(arixv/Google学术/百度学术处拷贝)
-- 杂 : 含各个说明文件
+- 杂 : 包括但不限于校论文格式、平台配置说明等文件
 
 
 
 ## 更新
 
-### 2021.05.27 版本修改
+### 2021.05.27 版本修改(18级硕士终版，后续请自行修正)
 
 * 细微bug修复
+* 减小 Chapter 头部空白
 
 ### 2021.05.10 版本修改
 

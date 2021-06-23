@@ -23,7 +23,7 @@
 %% 
  \NeedsTeXFormat{LaTeX2e}[1999/12/01]
  \ProvidesClass{seuthesis}[2017/06/07 2.5.3 The LaTeX template for thesis of Southeast University]
- \typeout{Document Class `seuthesis' v2.5.3 by Xinyi Hu (2020/06/07)}
+ \typeout{Document Class `seuthesis' v2.6.1 by Xinyi Hu (2021/05/27)}
 \newif\ifbachelordegree\bachelordegreefalse
 \newif\ifmasterdegree\masterdegreetrue
 \newif\ifengineering\engineeringfalse
@@ -173,15 +173,14 @@ BoldItalicFont=timesbi.ttf
   }
 \AtEndDocument{\backcover}
 
-\RequirePackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
+\RequirePackage[top=2cm,bottom=2.4cm,left=2cm,right=2cm]{geometry}
 \RequirePackage[pagestyles, rm]{titlesec}
 \RequirePackage{titletoc} % 设置目录
 \hypersetup{bookmarksnumbered=true}%书签中章节编号
 \defaultfontfeatures{Mapping=tex-text} % --- as em-dash
 
 
-
-
+\titlespacing*{\chapter}{0pt}{.5\baselineskip}{.5\baselineskip}
 \setlength{\parskip}{0pt}% 段距
 \newcommand{\mainlineskip}{1.3}% 主行距1.3
 \titlespacing{\section}{0pt}{3.5ex plus .05ex minus .01ex}{2.9ex plus .04ex} % 标题间距

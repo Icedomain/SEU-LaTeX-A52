@@ -1,20 +1,19 @@
 % !TEX TS-program = xelatex
 % !TeX encoding = UTF-8
 
-% \documentclass[master]{seuthesis} % 硕士
 
+\documentclass[master]{seuthesis} % 硕士
 % 取消颜色,打印时候使用 !!!!!!!!!!!!
-\documentclass[master,nocolorlinks]{seuthesis} 
+% \documentclass[master,nocolorlinks]{seuthesis} 
 % \documentclass[doctor]{seuthesis} % 博士
 % \documentclass[engineering]{seuthesis} % 工程硕士
 
+% Xinyi Hu add same packages
 \usepackage{CJK,CJKnumb}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
+\usepackage{amsmath,amsfonts,amssymb}
 \usepackage{bm}
-\usepackage{subfigure}
 \usepackage{url}
+\usepackage{subfigure}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{multirow,makecell}
@@ -36,18 +35,18 @@
 %\DeclareMathOperator{\sign}{sign} 
 
 \begin{document}
-\categorynumber{TP391} % 分类采用《中国图书资料分类法》
-\UDC{621.3}            %《国际十进分类法UDC》的类号
+\categorynumber{ {\color{red} TP391} } % 分类采用《中国图书资料分类法》
+\UDC{{\color{red} 621.3} }            %《国际十进分类法UDC》的类号
 \secretlevel{公开}      % 学位论文密级分为"公开"、"内部"、"秘密"和"机密"四种
 \studentid{18xxxx}   %学号要完整，前面的零不能省略。
 
 \title{基于深度学习的希腊字母研究}{{\color{red}学位论文形式:应用研究(专业硕士专用)}}{Thesis Title}{subtitle}
 \author{朴智新}{Zhixin PIAO}
 \advisor{杨绿溪}{教授}{Luxi YANG}{Prof.}
-%\coadvisor{李春国}{教授}{LI Chunguo}{Prof.}  % Associate  Prof.  副教授
+\coadvisor{李春国}{教授}{LI Chunguo}{Prof.}  % Associate  Prof.  副教授
 
-%\committeechair{徐琴珍 \quad 教授}
-%\reader{黄永明 \quad 教授}{ 李春国 \quad 教授 }
+\committeechair{徐琴珍 \quad 教授}
+\reader{黄永明 \quad 教授}{ 李春国 \quad 教授 }
 
 
 \degree{工学硕士}
@@ -91,9 +90,6 @@
 \bibliography{ref/seuthesis}
 
 
-%\newpage
-%\printindex % 索引
-
 % 附录
 \begin{Appendix}
 \input{chap/Appendix}
@@ -103,6 +99,7 @@
 \begin{Resume}
 \input{chap/Resume}
 \end{Resume}
+
 \end{document}
 
 
